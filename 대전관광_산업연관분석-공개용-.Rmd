@@ -1,0 +1,630 @@
+---
+title: "대전관광_산업연관분석"
+author: "이호제, 한원희, 박예원"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    fig_height: 6
+    fig_width: 10
+    highlight: textmate
+    theme: cosmo
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    fig_height: 6
+    fig_width: 10
+    toc: no 
+  word_document:
+    fig_height: 6
+    fig_width: 9
+    toc: no
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# I. 서론 및 연구방법{.tabset .tabset-fade} 
+
+## I.1. 서론
+
+```
+코로나 19로 인하여 전 세계적으로 경제적 타격이 입은 오늘날 특히나 큰 타격을 입은 관광 산업분야에 대하여 어떠한 사업들이 관광 사업에 도움을 주고 있는가. 
+또는, 영향을 끼치지 못하 고있는가를 관광 관련 학과에서 수업을 듣고 앞으로 진입하고자 하는 입장에서 배재대학교가 위치하고 있는 대전광역시의 관광 산업에 연관하여 직접적으로 조사해보고자 하였습니다.
+또한, 한눈에 알아보기 쉽고 원하는 데이터를 더욱 효율적으로 확인할 수 있도록 R프로그램을 사용하여 HTML파일을 만들었습니다.
+
+```
+
+## I.2. 연구방법
+
+```
+관광산업 기준과 분류 과정
+
+기준설정- 기준설정분류, 지역분류, 산업재분류, 고용표분류 등의 과정을 통해 경제적 파급효과 추정에 필요한 자료를 확보하였다. 지역분류에서는 전체의 17개의 지역을 간추려서 2개의 지역(대전, 그 외 타지역으로 통합을 하였다. 산업재분류에서 소분류에서 165개의 산업기준을 관광산업에 맞게끔 34개의 산업으로 통합하고 나머지는 너무 많은 관계로 뻈습니다. 고용표분류에서는 중분류 83개의 산업기준을 관광 산업에 맞게끔 34개의 통합하였습니다.
+```
+
+```
+연구방법은 먼저 승수를 도출(No.1)하고 이후 지출액을 추정(No.2)한 다음 마지막으로 경제적 파급효과를 추청(No.3)하는 순으로 구성하였다. 
+-(No.1: 승수 도출단계) 대전과 타 지역으로 지역을 통합한 다음 관광산업에 맞게끔 34개 산업으로 통합시킨 후 각각의 승수를 도출
+<br>
+-(No.2: 지출액 추정 단계) 2020년 기준 설문조사에 의해 취합된 지출비용(숙박비, 식음료비, 교통비, 쇼핑비, 문화/오락비)의 1인당 평균 비용과 추정된 2020년 대전방문관광객 수 3,178,831명)를 곱한 후 산업별(관광쇼핑업, 관광교통업, 음식점업, 숙박업, 문화 및 관광오락서비스업) 지출액을 추정
+<br>
+ (No.3: 경제적 파급효과 추정) 도출된 승수와 추정된 지출액을 곱하여 5가지 범주(생산파급효과, 소득파급효과, 세금파급효과, 부가가치파급효과, 고용파급효과)에 해당하는 산업별 경제적 파급효과를 추정
+```
+
+```
+(1) 승수 도출
+- (지역 통합) 2015년 지역산업연관분석(한국은행, 2019)의 16개 지역을 대전과 타지역으로 통합
+- (산업 통합) 지역산업연관분석의 소분류(165개 부문)와 고용표의 중분류(83개 부문)를 기준으로 관광산업에 적용하기 위해 관광교통업, 관광쇼핑업, 음식점업, 숙박업, 문화 및 관광오락서비스업을 포함하는 34개 산업으로 통합
+- (승수 도출) 통합한 산업연관분석을 기준으로 유발계수 계산 후 생산승수, 소득승수, 간접세승수, 부가가치승수, 고용승수를 유발계수를 기준으로 계산
+```
+
+```
+(2) 지출액 추정
+- (2020년 기준 대전관광 실태조사 결과) 5가지(관광교통업, 관광쇼핑업, 음식점업, 숙박업, 문화 및 관광오락서비스업) 산업별 설문조사 항목에 대한 응답 데이터를 통해 각 관광산업의 1인당 평균 지출액 도출
+- (추정된 2020년 대전방문 관광객 수) 3,178,831명
+- (산업별 지출액 추정) 대전관광 산업의 1인당 평균 지출액에 앞서 추정한 2020년 대전방문 관광객 수(3,178,825명)를 곱하여 대전방문 관광객으로 인한 관광지출액을 추정한 결과는 아래와 같음
+```
+
+# II. 사전작업 {.tabset .tabset-fade}
+
+## II.1. 데이터 설정 
+
+*정확한 데이터를 불러오기 위한 사전작업
+
+### II.1.1 데이터셋 삭제
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+* 환경최초로: Global environment 패널상에 있는 모든 데이터셋 삭제 
+```{r}
+rm(list=ls()) #Removes all items in Environment!
+```
+</details>
+
+
+### II.1.2.관련 패키지 인스톨 및 로드
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+```{r}
+#### 패키지 자동인스톨 및 로드, c()에 필요한 패키지 추가 가능
+packages = c("openxlsx","stargazer","flextable","DT","dplyr","knitr")
+
+### 기존에 없는 패키지는 새로 설치, 있는 패키지는 로드만
+package.check <- lapply(packages, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+    library(x, character.only = TRUE)}})
+```
+</details>
+
+### II.1.3. 필요함수 설정
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+```{r}
+# 행렬통합 함수
+merge_mat <- function(ori_mat,group){
+  r_sum <- rowsum(ori_mat, group) #기준에 따라 가로합
+  c_sum <- rowsum(t(r_sum), group) #기준에 따라 세로합
+  merged_mat <- t(c_sum) # 전치를 해야 원래 행렬이 찾아짐
+}
+
+# 유발계수 도출함수(생산유발효과 제외)
+ripple_mat_wo.product <- function(added_mat){
+  added_mat<- ifelse(added_mat == 0, 1, added_mat) # 0이 있으면 1로 치환(계산오류 방지를 위해)
+  added_mat_coef=added_mat/input_tot
+  added_mat_effect= diag(as.numeric(added_mat_coef)) %*% IminusA_reverse_지역_산업
+}
+
+# 파급효과 도출함수(생산파급효과 제외)
+ripple_effect_wo.product <- function(multiplier_mat,unit){
+  multiplier_mat_deco = as.matrix(multiplier_mat) %*% as.matrix(diag(input))
+  multiplier_mat_deco = round(multiplier_mat_deco/unit,3)
+  multiplier_mattot = colSums(multiplier_mat_deco,3)
+}
+```
+</details>
+
+$$\\[0.1in]$$
+
+
+
+## II.2. 데이터 로드 및 설정 
+
+```
+-생산자가격표에서 내생부문, 부가가치부문, 고용자수 부문을 각각, 좌표를 설정한 후에 적절한 함수(read.xlsx, load, read.csv 등)를 사용하여 파일을 불러옴
+```
+### II.2.1. 생산자가격표 로드
+파일 로드  
+아래코드는 한번만 실행하고 닫아줌
+
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+```{r include=FALSE}
+# file.choose() 파일로드 전 경로 찾기
+# origin <- read.xlsx("C:\\Users\\user\\Desktop\\R파일모음\\kyungbuk_io\\투입산출표_생산자가격_총거래표 및 투입계수_decompose_ver2.xlsx",1) #투입산출표_생산자가격_총거래표 및 투입계수(2015기준) by Song, 숫자로이루어진 시트
+# save(origin,file=file.choose())
+```
+
+
+생산자가격표 R파일 로드
+로드 시간을 줄여주기 위해서 시행
+```{r}
+load("D:\\대전관광객_산업연관분석\\origin.RData")
+```
+<details>
+  
+  
+### II.2.2. 생산자가격표 분석설정
+
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+시작점 설정
+```{r}
+dim(origin)
+origin[1:5,1:5] # 앞부분 탐색
+origin[1,1] # 시작점 결정
+origin[nrow(origin),ncol(origin)]
+start=c(1,1) # 시작점 좌표 넣어주기
+```
+
+지역분석 설정
+```{r}
+total_region=17 # 수입계 제외 
+```
+
+생산자거래표 내생부문좌표설정
+```{r}
+n_sec_before=165; # 산업165개 기준
+n_sec_after=34 # 통합후 산업의 수
+n_region=2 # 지역의 수
+loc_inter=n_sec_before*total_region
+```
+
+내생부문 추출과 더블체크(수입계 제외 내생부문)
+```{r}
+내생부문=origin[start[1]:(start[1]+loc_inter-1),start[2]:(start[2]+loc_inter-1)]
+dim(내생부문); 내생부문[1,1]; 내생부문[nrow(내생부문),ncol(내생부문)]
+내생부문[loc_inter,loc_inter] # 엑셀파일에서 비교
+```
+<details>
+  
+
+### II.2.3. 부가가치부문 로드
+파일 로드  
+아래코드는 한번만 실행하고 닫아줌
+
+
+```{r include=FALSE}
+#부가가치부문 = read.xlsx("C:\\Users\\user\\Desktop\\R파일모음\\kyungbuk_io\\투입산출표_생산자가격_총거래표 및 투입계수_decompose_ver2.xlsx",2) #투입산출표_생산자가격_총거래표 및 투입계수(2015기준) by Song, 숫자로이루어진 시트
+#dim(부가가치부문); class(부가가치부문)
+#head(부가가치부문)
+# save(부가가치부문,file=file.choose())
+```
+
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+로드 시간을 줄여주기 위해서 시행  
+부가가치 R파일 로드
+```{r}
+load("D:\\대전관광객_산업연관분석\\부가가치부문.RData")
+```
+<details>
+
+### II.2.3. 고용자수 부문 로드
+파일 로드
+
+<details>
+  <summary>보고 싶을 경우 클릭!</summary>
+```{r}
+employ_origin <- read.xlsx( "D:\\대전관광객_산업연관분석\\고용자수(R적재용,문화오락통합,0201).xlsx",1) # 고용자수부문
+```
+통합후 산업이름 설정
+```{r}
+ind_name = employ_origin[1:n_sec_after,1]
+```
+
+<details>
+
+## II.3. 지역통합 {.tabset .tabset-fade}
+*불러온 파일을 대전지역과 기타지역으로 통합하기 위한 작업
+*지역통합 설정후 내생부문과 부가가치 부문 또한, 통합 
+<!-- ### II.3.1. 지역통합 설정  -->
+
+ 
+```{r include=FALSE}
+r1 <- c(1:n_sec_before) # 1지역 생성
+r2 <- c((n_sec_before+1):(2*n_sec_before)) # 지역2(기타) 생성
+
+# 바꿔야 하는 부분 중요
+# 1:서울    2:인천     3:경기      4:대전      5:세종
+# 6:충북    7:충남     8:광주      9:전북      10:전남
+# 11:대구   12:경북    13:부산     14:울산     15:경남
+# 16:강원   17:제주    18:수입계
+r_integrated <- c(r2,r2,r2,r1,r2,
+                  r2,r2,r2,r2,r2,
+                  r2,r2,r2,r2,r2,
+                  r2,r2)
+```
+ 
+
+<!-- ### II.3.2. 내생부문 지역통합 -->
+
+ 
+```{r include=FALSE}
+내생부문_지역 = merge_mat(내생부문,r_integrated)
+dim(내생부문_지역)
+내생부문_지역[1:5,1:5] # 앞부분 탐색
+내생부문_지역[118,118] # 1지역 도소매값
+내생부문_지역[(n_sec_before+1):(n_sec_before+5),1:5] # 앞부분 탐색
+# IminusA_reverse_산업_지역=data.frame(IminusA_reverse_산업_지역)
+# write.xlsx(IminusA_reverse_산업_지역,file.choose())
+```
+ 
+<!-- ### II.3.3. 부가가치부문 지역통합 -->
+ 
+```{r include=FALSE}
+c_sum <- rowsum(t(부가가치부문), r_integrated)
+부가가치_지역<-t(c_sum); dim(부가가치_지역)
+부가가치_지역[1:6,1:5] # 앞부분 탐색
+부가가치_지역[1,118] # 1지역 도소매값 피용자보수
+부가가치_지역[1,(n_sec_before+1):(n_sec_before+5)] # 앞부분 탐색
+```
+ 
+## II.4. 산업통합 
+
+* 165개의 산업을 34개의 산업으로 통합
+* 총지역 산업 통합후 내생부문과 부가가치 부문도 통합
+
+<!-- ## IV.1. 산업통합 설정  -->
+<!-- 산업통합그룹설정/산업통합/하단좌측 맨윗줄을 제외하고 이후 절대값의 숫자가 하단우측의 산업수와 동일해야함   -->
+
+```{r include=FALSE}
+                                         #갯수는 엑셀에 count함수로 표기됨
+농림 <- rep(1,8)                         # 001~008: 01(농림어업)                                  1~8                          
+광업 <- rep(2,4)                         # 009~012: 02(광업)                                      9-12-1
+음식 <- rep(3,11)                        # 013~023: 03(음식료품 및 담배 제조업)                   13-23-1
+섬유 <- rep(4,6)                         # 024~029: 04(섬유 및 가죽제품 제조업)                   24-29-1
+목재 <- rep(5,6)                         # 030~035: 05(목재, 종이, 인쇄 및 복제업)                30-35-1
+석탄 <- rep(6,3)                         # 036~038: 06(석탄 및 석유제품 제조업)                   36-38-1
+화학 <- rep(7,13)                        # 039~051: 07(화학제품 제조업)                           39-51-1
+비금속 <- rep(8,5)                       # 052~056: 08(비금속광물제품 제조업)                     52-56-1
+금속_1차 <- rep(9,7)                     # 057~063: 09(1차 금속제품 제조업)                       57-63-1
+금속가공 <- rep(10,4)                    # 064~067: 10(금속제품 제조업)                           64-67-1
+컴퓨터_전자_광학 <- rep(11,9)            # 068~076: 11(컴퓨터, 전자 및 광학기기)                  68-76-1
+전기장비 <- rep(12,6)                    # 077~082: 12(전기장비)                                  77-82-1
+기계_장비 <- rep(13,11)                  # 083~093: 13(정밀기기 제조업)                           83-93-1
+운송장비 <- rep(14,7)                    # 094~100: 14(운송장비)                                  94-100-1
+기타제조업 <- rep(15,2)                  # 101~102: 15(기타 제조업 제품)                          101-102-1
+제조임가공_산업용장비 <- rep(16,1)       # 103: 16(제조임가공 및 산업용 장비 수리)                103-103-1
+전력_가스_증기 <- rep(17,3)              # 104-106: 17(전력, 가스 및 증기)                        104-106-1
+수도_폐기물_재활용 <- rep(18,4)          # 107-110: 18(수도, 폐기물 및 재활용서비스)              107-110-1
+건설 <- rep(19,7)                        # 111-117: 19(건설)                                      111-117-1
+쇼핑 <- rep(20,1)                        # 118: 20(관광쇼핑)                                      118-118-1
+관광교통 <- rep(21,4)                    # 119~122: 21(관광교통업)                                119-122-1
+운송 <- rep(22,6)                        # 123~128: 22(운수업)                                    123-128-1
+#제1그룹
+group_ind1_1 = c(농림,광업,음식,섬유,목재,석탄,화학,비금속,
+                   금속_1차,금속가공,컴퓨터_전자_광학,전기장비,
+                   기계_장비,운송장비,기타제조업,제조임가공_산업용장비,
+                   전력_가스_증기,수도_폐기물_재활용,건설,쇼핑,
+                   관광교통,운송)
+table(group_ind1_1)
+sum(table(group_ind1_1))
+001-128-1 # 처음산업 끝산업으로 산업의 수 파악, 산업수는 맞출 수 있지만 세부내용 파악 어려워서 더블체크 필요
+```
+
+
+```{r include=FALSE}
+
+식음료 <- rep(23,1)                       # 129: 23(음식점 및 숙박업)                          129-129-1
+숙박 <- rep(24,1)                         # 130: 24(음식점 및 숙박업)                          130-130-1
+정보통신_방송 <- rep(25,8)                # 131~138: 25(정보통신 및 방송 서비스)               131-138-1
+금융_보험 <- rep(26,4)                    # 139~142: 26(금융 및 보험 서비스)                   139-142-1
+부동산 <- rep(27,3)                       # 143~145: 27(부동산 및 임대)                        143-145-1
+전문_과학기술 <- rep(28,5)                # 146~150: 28(전문, 과학 및 기술 서비스)             146-150-1
+사업지원 <- rep(29,4)                     # 151~154: 29(사업지원서비스)                        151-154-1
+공공행정_국방 <- rep(30,2)                # 155-156: 30(공공행정 및 국방)                      155-156-1
+교육 <- rep(31,1)                         # 157: 31(교육서비스)                                157-157-1
+보건_사회복지 <- rep(32,2)                # 158~159: 32(보건 및 사회복지 서비스)               158-159-1
+
+group_ind2_1 = c(식음료,숙박,정보통신_방송,금융_보험,
+                    부동산,전문_과학기술,사업지원,공공행정_국방,
+                    교육,보건_사회복지) 
+table(group_ind2_1)
+sum(table(group_ind2_1))
+129-159-1 # 처음산업 끝산업으로 산업의 수 파악, 산업수는 맞출 수 있지만 세부내용 파악 어려워서 더블체크 필요
+```
+
+
+```{r include=FALSE}
+문화여행스포츠오락 <- rep(33,2)             # 160~161: 33(문화 및 여행 관련 서비스)              160-161-1
+기타서비스 <- rep(34,4)                     # 162~165: 34(정보통신 및 방송 서비스)               162-165-1
+group_ind3_1 =c(문화여행스포츠오락,기타서비스) # 문화 및 기타서비스업+관광오락서비스업
+table(group_ind3_1)
+sum(table(group_ind3_1))
+160-165-1 # 처음산업 끝산업으로 산업의 수 파악, 산업수는 맞출 수 있지만 세부내용 파악 어려워서 더블체크 필요
+```
+
+
+```{r include=FALSE}
+group_ind = c(group_ind1_1, group_ind2_1, group_ind3_1,
+               group_ind1_1+n_sec_after, group_ind2_1+n_sec_after, group_ind3_1+n_sec_after)
+table(group_ind)
+```
+
+
+```{r include=FALSE}
+내생부문_지역_산업 = merge_mat(내생부문_지역,group_ind); dim(내생부문_지역_산업)
+내생부문_지역_산업[1:5,1:5] # 앞부분 탐색
+내생부문_지역_산업[(n_sec_after+1):(n_sec_after+5),1:5] # 앞부분 탐색
+all.equal(내생부문_지역_산업[20,20],내생부문_지역[118,118]) #22는 45개산업중 쇼핑, 118은 165개 산업중 도소매및상품중개서비스
+```
+
+
+```{r include=FALSE}
+c_sum <- rowsum(t(부가가치_지역), group_ind)
+부가가치_지역_산업<-t(c_sum); dim(부가가치_지역_산업)
+부가가치_지역_산업[1:6,1:5] # 앞부분 탐색
+부가가치_지역_산업[1,22] # 1지역 도소매값 피용자보수
+부가가치_지역_산업[1,(n_sec_after+1):(n_sec_after+5)] # 앞부분 탐색
+all.equal(부가가치_지역_산업[1,20],부가가치_지역[1,118])
+```
+
+
+# III. 승수 도출 {.tabset .tabset-fade}
+
+통합한 산업을 기준으로 유발계수 계산후 생산승수, 소득승수, 간접세승수, 부가가치승수, 고용승수를 계산
+```
+*계수: 생산액/총투입액, 계수행렬: 계수의 모임  
+*승수행렬: 추가연산을 통해 승수도출을 위해 계산된 행렬(효과분해된 상태)
+*승수: 파급효과를 위해 도출된 값(효과합성된 상태)  
+
+```
+
+<!-- ## V.1. 총투입액 설정 -->
+```{r include=FALSE}
+input_tot = 부가가치_지역_산업[6,]
+input_tot<- ifelse(input_tot == 0, 1, input_tot) # 총투입액에서 0이 있으면 1로 치환(계산오류 방지를 위해)
+input_tot_n = rep(input_tot,times=n_sec_after) # 행렬계산을 위해 total_input_region 분류수 만큼 생성후 행렬 작성
+input_tot_mat<-matrix(input_tot_n,nrow=n_sec_after*n_region,ncol=n_sec_after*n_region,byrow=T)
+input_tot_mat<-as.data.frame(input_tot_mat)
+```
+
+<!-- ## V.2. A(투입계수)행렬 -->
+```{r include=FALSE}
+내생부문_지역_산업_A_mat <- 내생부문_지역_산업/input_tot_mat
+head(내생부문_지역_산업_A_mat)
+```
+
+<!-- ## V.3. I-A 역행렬: 생산유발승수행렬 -->
+```{r include=FALSE}
+I=diag(nrow(내생부문_지역_산업_A_mat)) # 단위행렬
+IminusA_reverse_지역_산업 = solve(I-내생부문_지역_산업_A_mat)
+# IminusA_reverse_지역_산업_xlsx = data.frame(IminusA_reverse_지역_산업)  # write.xlsx안될시 사전작업
+# write.xlsx(IminusA_reverse_지역_산업_xlsx,file.choose())       # 지역내 파급효과(경북_동국대).xlsx
+```
+
+<!-- ## V.4. 생산유발승수행렬 추출 -->
+```{r include=FALSE}
+IminusA_reverse_r11=IminusA_reverse_지역_산업[1:n_sec_after,1:n_sec_after]
+IminusA_reverse_r21=IminusA_reverse_지역_산업[(n_sec_after+1):(n_sec_after*n_region),1:n_sec_after]
+```
+
+## III.1. 생산승수
+첫열: 지역내, 둘째열: 지역간
+```{r echo=FALSE}
+product_r11_eff=colSums(IminusA_reverse_r11)
+product_r21_eff=colSums(IminusA_reverse_r21)
+product_eff=t(rbind(product_r11_eff,product_r21_eff))
+kable(cbind(ind_name,product_eff))
+```
+
+<!-- # VI. 소득유발승수 {.tabset .tabset-fade} -->
+
+<!-- ## VI.1. 소득유발승수행렬 도출 -->
+```{r include=FALSE}
+income = t(부가가치_지역_산업[1,]) # 2지역 피용자보수 도출 후 가로화
+income_effect=ripple_mat_wo.product(income)
+```
+<!-- ## VI.2. 해당 소득유발승수행렬 추출 -->
+```{r include=FALSE}
+income_r11=income_effect[1:n_sec_after,1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+income_r21=income_effect[(n_sec_after+1):(n_sec_after*2),1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+```
+## III.2. 소득유발승수
+첫열: 지역내, 둘째열: 지역간
+```{r echo=FALSE}
+income_r11_eff=colSums(income_r11)
+income_r21_eff=colSums(income_r21)
+income_eff=t(rbind(income_r11_eff,income_r21_eff))
+kable(cbind(ind_name,income_eff))
+```
+
+
+<!-- # VII. 조세유발승수 {.tabset .tabset-fade} -->
+
+<!-- ## VII.1. 조세유발승수행렬 도출 -->
+```{r include=FALSE}
+tax = t(부가가치_지역_산업[4,])
+tax_effect=ripple_mat_wo.product(tax)
+```
+<!-- ## VII.2. 해당 조세유발승수행렬 추출 --> -->
+```{r}
+tax_r11=tax_effect[1:n_sec_after,1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+tax_r21=tax_effect[(n_sec_after+1):(n_sec_after*2),1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+```
+
+## III.3. 조세유발승수
+첫열: 지역내, 둘째열: 지역간
+```{r echo=FALSE}
+tax_r11_eff=colSums(tax_r11)
+tax_r21_eff=colSums(tax_r21)
+tax_eff=t(rbind(tax_r11_eff,tax_r21_eff))
+kable(cbind(ind_name,tax_eff))
+```
+
+
+<!-- # VIII. 부가가치유발승수 {.tabset .tabset-fade} -->
+
+<!-- ## VIII.1. 부가가치유발승수행렬 도출 -->
+```{r include=FALSE}
+added = t(부가가치_지역_산업[5,])
+added_effect=ripple_mat_wo.product(added)
+```
+<!-- ## VIII.2. 해당 부가가치유발승수행렬 추출 -->
+```{r include=FALSE}
+added_r11=added_effect[1:n_sec_after,1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+added_r21=added_effect[(n_sec_after+1):(n_sec_after*2),1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+```
+## III.4. 부가가치승수
+첫열: 지역내, 둘째열: 지역간
+```{r echo=FALSE}
+added_r11_eff=colSums(added_r11)
+added_r21_eff=colSums(added_r21)
+added_eff=t(rbind(added_r11_eff,added_r21_eff))
+kable(cbind(ind_name,added_eff))
+```
+
+<!-- # IX. 고용자수 유발승수 {.tabset .tabset-fade} -->
+
+<!-- ## IX.1. 고용자수 유발승수행렬 도출 -->
+```{r include=FALSE}
+#employ_origin <- read.xlsx("C:\\Users\\user\\Desktop\\R파일모음\\kyungbuk_io\\고용자수_경북(동국대).xlsx",1) # 고용자수부문
+employ_r1 <- t(employ_origin[1:n_sec_after,2]) # 수치 가져올 때 행렬번호 유의할 것
+employ_r2 <- t(employ_origin[1:n_sec_after,3])
+employ <- cbind(employ_r1,employ_r2)
+employ_effect=ripple_mat_wo.product(employ)
+#ind_name = employ_origin[1:n_sec_after,1]
+```
+<!-- ## IX.2. 해당 고용자수 유발승수행렬 추출 -->
+```{r include=FALSE}
+employ_r11=employ_effect[1:n_sec_after,1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+employ_r21=employ_effect[(n_sec_after+1):(n_sec_after*2),1:n_sec_after] #4개의 영역중 main인 2개의 영역만 선택
+```
+## III.5. 고용승수
+첫열: 지역내, 둘째열: 지역간
+```{r echo=FALSE}
+employ_r11_eff=colSums(employ_r11)
+employ_r21_eff=colSums(employ_r21)
+employ_eff=t(rbind(employ_r11_eff,employ_r21_eff))
+kable(cbind(ind_name,employ_eff))
+```
+<!-- ### X.2.1. 지역내 승수종합 -->
+<!-- ```{r} -->
+<!-- eff_r11 = round(cbind(product_r11_eff,income_r11_eff,tax_r11_eff,added_r11_eff,employ_r11_eff),5) -->
+<!-- eff_r11_1=colSums(eff_r11) # 총합 -->
+
+<!-- eff_r11 = cbind(ind_name,eff_r11) -->
+<!-- # kable(as.matrix(eff_r11)) -->
+
+<!-- # eff_r11_xlsx = data.frame(eff_r11)    # write.xlsx안될시 사전작업 -->
+<!-- # write.xlsx(eff_r11_xlsx,file.choose())  # 지역내 승수 종합(경북_동국대).xlsx -->
+<!-- ``` -->
+
+<!-- ### X.3.1. 지역간 승수종합 -->
+<!-- ```{r} -->
+<!-- eff_r21 = round(cbind(product_r21_eff,income_r21_eff,tax_r21_eff,added_r21_eff,employ_r21_eff),5) -->
+<!-- eff_r21_1=colSums(eff_r21) #총합 -->
+
+<!-- eff_r21 = cbind(ind_name,eff_r21) -->
+<!-- # kable(as.matrix(eff_r21)) -->
+
+<!-- # eff_r21_xlsx = data.frame(eff_r21)     # write.xlsx안될시 사전작업 -->
+<!-- # write.xlsx(eff_r21_xlsx,file.choose()) # 지역간 승수(경북_동국대).xlsx -->
+<!-- ``` -->
+
+# IV. 주요 승수&경제적 파급효과 종합 {.tabset .tabset-fade}
+
+
+## IV.1. 승수종합
+```{r include=FALSE}
+#list(eff_r11,eff_r21)
+#class(eff_r11)
+#kable(eff_r11)
+
+eff_r11 = round(cbind(product_r11_eff,income_r11_eff,tax_r11_eff,added_r11_eff,employ_r11_eff),5)
+eff_r11_1=colSums(eff_r11) # 총합
+eff_r11 = cbind(ind_name,eff_r11)
+
+eff_r21 = round(cbind(product_r21_eff,income_r21_eff,tax_r21_eff,added_r21_eff,employ_r21_eff),5)
+eff_r21_1=colSums(eff_r21) #총합
+eff_r21 = cbind(ind_name,eff_r21)
+
+# kable(list(eff_r11,eff_r21))
+kable(list(eff_r11,eff_r21),caption = "지역내(좌측)&지역간(우측) 승수종합")
+```
+
+```{r echo=FALSE}
+kable(list(eff_r11[c(20,21,23,24,33),],eff_r21[c(20,21,23,24,33),]),caption = "지역내(좌측)&지역간(우측) 승수종합")
+
+```
+
+## IV.2. 총지출액 
+
+```
+관광객수 = 3,178,831 
+
+쇼핑= 129,378,000,000
+관광교통=73,628,000,000
+음식점=157,994,000,000
+숙박비=229,791,000,000
+관광오락=87,672,000,000
+```
+```{r}
+쇼핑 = 1.29378E+11
+관광교통 = 73628083622
+음식점 = 1.57994E+11
+숙박 = 2.29791E+11
+관광오락 = 87672158980
+
+input = c(0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,쇼핑,
+          관광교통,0,음식점,숙박,0,0,0,0,0,0,
+          0,0,관광오락,0) 
+```
+
+## IV.3. 지역내 경제적 파급효과 종합
+```{r echo=FALSE}
+product_r11_deco = as.matrix(IminusA_reverse_r11) %*% as.matrix(diag(input)) 
+product_r11_deco = round(product_r11_deco/1000000,3) # 백만원 환산
+product_r11_tot = colSums(product_r11_deco,3)
+income_r11_tot = ripple_effect_wo.product(income_r11,1000000) # 백만원 환산
+tax_r11_tot = ripple_effect_wo.product(tax_r11,1000000) # 백만원 환산
+added_r11_tot = ripple_effect_wo.product(added_r11,1000000) # 백만원 환산
+employ_r11_tot = ripple_effect_wo.product(employ_r11,1000000) # 백만원당 고용자수 환산
+
+tot_in = cbind(product_r11_tot,income_r11_tot,tax_r11_tot,added_r11_tot,employ_r11_tot)
+tot_in_colsum = colSums(tot_in)
+
+#주요산업도출 사전작업
+tot_in = cbind(ind_name,tot_in)
+
+kable(list(tot_in[c(20,21,23,24,33),]),caption = "지역내 경제적 파급효과(단위:백만원,명)")
+kable(tot_in_colsum,caption = "지역내 경제적 파급효과 종합(단위:백만원,명)")
+```
+
+
+## IV.4. 지역간 경제적 파급효과 종합
+```{r echo=FALSE}
+product_r21_deco = as.matrix(IminusA_reverse_r21) %*% as.matrix(diag(input)) 
+product_r21_deco = round(product_r21_deco/1000000,3) # 백만원 환산
+product_r21_tot = colSums(product_r21_deco,3)
+income_r21_tot = ripple_effect_wo.product(income_r21,1000000) # 백만원 환산
+tax_r21_tot = ripple_effect_wo.product(tax_r21,1000000) # 백만원 환산
+added_r21_tot = ripple_effect_wo.product(added_r21,1000000) # 백만원 환산
+employ_r21_tot = ripple_effect_wo.product(employ_r21,1000000) # 백만원당 고용자수 환산
+
+tot_between = cbind(product_r21_tot,income_r21_tot,tax_r21_tot,added_r21_tot,employ_r21_tot)
+tot_between_colsum = colSums(tot_between)
+
+#주요산업도출 사전작업
+tot_between = cbind(ind_name,tot_between)
+
+#list(tot_between_colsum,kable(cbind(ind_name,tot_between)))
+kable(list(tot_between[c(20,21,23,24,33),]),caption = "지역간 경제적 파급효과(단위:백만원,명)")
+kable(tot_between_colsum,caption = "지역간 경제적 파급효과 종합(단위:백만원,명)")
+```
+
